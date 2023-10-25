@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>ASCII to Futhark Runes Transcription</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			text-align: center;
+		}
+		#container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			margin-top: 20px;
+		}
+		textarea {
+			font-size: 20pt;
+		}
+	</style>
+</head>
+<body>
+	<h1>English to Runes Transcription</h1>
+	<div id="container">
+		<textarea id="englishText" placeholder="Enter English text here" rows="4" cols="50"></textarea>
+		<textarea id="runesText" placeholder="Runes transcription will appear here" rows="4" cols="50" readonly></textarea>
+	</div>
+	
+	<script>
+		function transcribeToRunes() {
+			const englishText = document.getElementById("englishText").value;
+			const runesText = transcribeEnglishToRunes(englishText);
+			document.getElementById("runesText").value = runesText;
+		}
+		
+		function transcribeEnglishToRunes(englishText) {
+			const englishToRunesMap = {
+				// Start with that which takes two letters in English
+				'th': 'ᚦ',
+				// Now the normal ones
+				'a': 'ᚨ',
+				'b': 'ᛒ',
+				'c': 'ᚲ',
+				'd': 'ᛞ',
+				'e': 'ᛖ',
+				'f': 'ᚠ',
+				'g': 'ᚷ',
+				'h': 'ᚺ',
+				'i': 'ᛁ',
+				'j': 'ᛃ',
+				'k': 'ᚲ',
+				'l': 'ᛚ',
+				'm': 'ᛘ',
+				'n': 'ᚾ',
+				'o': 'ᛟ',
+				'p': 'ᛈ',
+				'q': 'ᚳᚹ', // Tolkin, "kw"
+				'r': 'ᚱ',
+				's': 'ᛋ',
+				't': 'ᛏ',
+				'u': 'ᚢ',
+				'v': 'ᚢ',
+				'w': 'ᚹ',
+				'x': 'ᚲ',
+				'y': 'ᚣ',
+				'z': 'ᛦ',
+				// numbers from
+				'1': 'ᚠ',
+				'2': 'ᚢ',
+				'3': 'ᚦ',
+				'4': 'ᚬ',
+				'5': 'ᚱ',
+				'6': 'ᚴ',
+				'7': 'ᚼ',
+				'8': 'ᚾ',
+				'9': 'ᛁ',
+				// Space
+				' ': ':',
+				// Now for the fake ones:
+				'-': '-',
+				'(': '(',
+				')': ')',
+				'[': '[',
+				']': ']',
+				'{': '{',
+				'}': '}',
+			};
+			
+			let workingCopy = englishText.toLowerCase();
+			let output = '';
+			
+			while (workingCopy.length > 0) {
+				let foundMatch = false;
+				for (let item in englishToRunesMap) {
+					if (workingCopy.startsWith(item)) {
+						output += englishToRunesMap[item];
+						workingCopy = workingCopy.slice(item.length);
+						foundMatch = true;
+						break;
+					}
+				}
+				if (!foundMatch) {
+					output += workingCopy.charAt(0);
+					workingCopy = workingCopy.slice(1);
+				}
+			}
+			
+			return output;
+		}
+		
+		document.getElementById("englishText").addEventListener("input", transcribeToRunes);
+	</script>
+</body>
+</html>
