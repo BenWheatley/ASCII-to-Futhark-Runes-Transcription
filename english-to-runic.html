@@ -17,90 +17,304 @@
 		textarea {
 			font-size: 20pt;
 		}
+		.label-checkbox {
+			padding: 10px;
+		}
+		.label-select {
+			padding: 10px;
+		}
+		.v-padding {
+			padding-top: 10px;
+			padding-bottom: 10px;
+		}
 	</style>
 </head>
 <body>
 	<h1>English to Runes Transcription</h1>
 	<div id="container">
 		<textarea id="englishText" placeholder="Enter English text here" rows="4" cols="50"></textarea>
+		<div>
+			<h2>Settings:</h2>
+			<div>
+				<label class="label-checkbox" for="numbersToRunesCheckbox">
+					<input type="checkbox" id="numbersToRunesCheckbox"> Convert numbers to runes
+				</label>
+				<label class="label-checkbox" for="spaceToColonCheckbox">
+					<input type="checkbox" id="spaceToColonCheckbox" checked> Replace space with colon
+				</label>
+				<label class="label-checkbox" for="keepModernSymbolsCheckbox">
+					<input type="checkbox" id="keepModernSymbolsCheckbox"> Keep basic modern symbols
+				</label>
+				<label class="label-checkbox" for="copyAllUnrecognisedSymbols">
+					<input type="checkbox" id="copyAllUnrecognisedSymbols"> Keep all unrecognised symbols
+				</label>
+			</div>
+			<div class="v-padding" />
+			<div>
+				<label class="label-select" for="futharkSelection">Selected runic alphabet:
+					<select id="futharkSelection">
+						<option value="Elder Futhark" selected>Elder Futhark</option>
+						<option value="Old English Futhorc">Old English Futhorc</option>
+						<option value="Younger Futhark">Younger Futhark</option>
+						<option value="Medieval Runes">Medieval Runes</option>
+						<option value="Dalecarlian Runes">Dalecarlian Runes</option>
+					</select>
+				</label>
+			</div>
+		</div>
 		<textarea id="runesText" placeholder="Runes transcription will appear here" rows="4" cols="50" readonly></textarea>
 	</div>
 	
 	<script>
 		function transcribeToRunes() {
 			const englishText = document.getElementById("englishText").value;
-			const runesText = transcribeEnglishToRunes(englishText);
+			const futhark = document.getElementById('futharkSelection').value;
+			const numbersToRunes = document.getElementById('numbersToRunesCheckbox').checked;
+			const spaceToColon = document.getElementById('spaceToColonCheckbox').checked;
+			const keepModernSymbols = document.getElementById('keepModernSymbolsCheckbox').checked;
+			const copyAllUnrecognisedSymbols = document.getElementById('copyAllUnrecognisedSymbols').checked;
+			const runesText = transcribeEnglishToRunes(englishText, futhark, numbersToRunes, spaceToColon, keepModernSymbols, copyAllUnrecognisedSymbols);
 			document.getElementById("runesText").value = runesText;
 		}
 		
-		function transcribeEnglishToRunes(englishText) {
-			const englishToRunesMap = {
-				// Start with that which takes two letters in English
-				'th': 'ᚦ',
-				// Now the normal ones
-				'a': 'ᚨ',
-				'b': 'ᛒ',
-				'c': 'ᚲ',
-				'd': 'ᛞ',
-				'e': 'ᛖ',
-				'f': 'ᚠ',
-				'g': 'ᚷ',
-				'h': 'ᚺ',
-				'i': 'ᛁ',
-				'j': 'ᛃ',
-				'k': 'ᚲ',
-				'l': 'ᛚ',
-				'm': 'ᛘ',
-				'n': 'ᚾ',
-				'o': 'ᛟ',
-				'p': 'ᛈ',
-				'q': 'ᚳᚹ', // Tolkin, "kw"
-				'r': 'ᚱ',
-				's': 'ᛋ',
-				't': 'ᛏ',
-				'u': 'ᚢ',
-				'v': 'ᚢ',
-				'w': 'ᚹ',
-				'x': 'ᚲ',
-				'y': 'ᚣ',
-				'z': 'ᛦ',
-				// numbers from
-				'1': 'ᚠ',
-				'2': 'ᚢ',
-				'3': 'ᚦ',
-				'4': 'ᚬ',
-				'5': 'ᚱ',
-				'6': 'ᚴ',
-				'7': 'ᚼ',
-				'8': 'ᚾ',
-				'9': 'ᛁ',
-				// Space
-				' ': ':',
-				// Now for the fake ones:
-				'-': '-',
-				'(': '(',
-				')': ')',
-				'[': '[',
-				']': ']',
-				'{': '{',
-				'}': '}',
-			};
+		const elderFuthark = new Map([
+			// Start with the runes that take two letters in English
+			['ng', 'ᛜ'],
+			['th', 'ᚦ'],
+			// Modern letters not used in modern English
+			['þ', 'ᚦ'],
+			['ð', 'ᚦ'],
+			['ï', 'ᛇ'],
+			['æ', 'ᛇ'],
+			['ŋ', 'ᛜ'],
+			// Modern English alphabet (Latin-order)
+			['a', 'ᚨ'],
+			['b', 'ᛒ'],
+			['c', 'ᚲ'],
+			['d', 'ᛞ'],
+			['e', 'ᛖ'],
+			['f', 'ᚠ'],
+			['g', 'ᚷ'],
+			['h', 'ᚺ'], // also ᚻ
+			['i', 'ᛁ'],
+			['j', 'ᛃ'],
+			['k', 'ᚲ'],
+			['l', 'ᛚ'],
+			['m', 'ᛗ'],
+			['n', 'ᚾ'],
+			['o', 'ᛟ'],
+			['p', 'ᛈ'],
+			['q', 'ᚲᚹ'], // why does English even have this letter?
+			['r', 'ᚱ'],
+			['s', 'ᛊ'], // also ᛋ
+			['t', 'ᛏ'],
+			['u', 'ᚢ'],
+			['v', 'ᚹ'],
+			['w', 'ᚹ'],
+			['x', 'ᚲᛋ'],
+			['w', 'ᚹᛁ'],
+			['z', 'ᛉ'],
+		]);
+		
+		const oldEnglishFuthorc = new Map([
+			// Start with the runes that take two letters in English
+			['th', 'ᚦ'],
+			['ea', 'ᛠ'],
+			['ng', 'ᛝ'],
+			['ch', 'ᚲ'],
+			// Modern letters not used in modern English
+			['þ', 'ᚦ'],
+			['ð', 'ᚦ'],
+			['æ', 'ᚫ'],
+			['ŋ', 'ᛝ'],
+			['œ', 'ᛟ'],
+			['ï', 'ᛇ'],
+			// Modern English alphabet (Latin-order)
+			['a', 'ᚪ'],
+			['b', 'ᛒ'],
+			['c', 'ᚲ'],
+			['d', 'ᛞ'],
+			['e', 'ᛖ'],
+			['f', 'ᚠ'],
+			['g', 'ᚷ'],
+			['h', 'ᚻ'],
+			['i', 'ᛁ'],
+			['j', 'ᛡ'], // also ᛄ
+			['k', 'ᚲ'],
+			['l', 'ᛚ'],
+			['m', 'ᛗ'],
+			['n', 'ᚾ'],
+			['o', 'ᛟ'],
+			['p', 'ᛈ'],
+			['q', 'ᚳᚹ'], // why does English even have this letter?
+			['r', 'ᚱ'],
+			['s', 'ᛋ'], // also ᚴ
+			['t', 'ᛏ'],
+			['u', 'ᚢ'],
+			['v', 'ᚹ'],
+			['w', 'ᚹ'],
+			['x', 'ᛉ'],
+			['y', 'ᚣ'],
+			['z', 'ᛏᚴ'], // 'z' isn't really a thing in the futhark
+		]);
+		
+		const youngerFuthark = new Map([
+			['f', 'ᚠ'],
+			['v', 'ᚠ'],
+			['u', 'ᚢ'], // also 'v', but then I'd be mixing ᚢ and ᚠ
+			['w', 'ᚢ'],
+			['y', 'ᚢ'],
+			['o', 'ᚢ'],
+			['ø', 'ᚢ'],
+			['þ', 'ᚦ'],
+			['ð', 'ᚦ'],
+			['a', 'ᚬ'],
+			['æ', 'ᚬ'], // also 'o', but then I'd be mixing ᚬ and ᚢ
+			['r', 'ᚱ'],
+			['ʀ', 'ᛦ'], // ʀ is not R
+			['k', 'ᚴ'],
+			['g', 'ᚴ'],
+			['ŋ', 'ᚴ'],
+			['h', 'ᚼ'], // also ᚽ
+			['n', 'ᚿ'], // also ᚾ
+			['i', 'ᛁ'],
+			['e', 'ᛁ'],
+			// ᛅ and ᛆ listed as a, æ, e, but I've already mapped each of those english letters
+			['s', 'ᛋ'],
+			['t', 'ᛐ'],
+			['d', 'ᛐ'],
+			['b', 'ᛒ'],
+			['p', 'ᛒ'],
+			['m', 'ᛘ'],
+			['l', 'ᛚ'],
+		]);
+		
+		const medievalRunes = new Map([
+			
+		]);
+		
+		const dalecarlianRunes = new Map([
+			['a', 'ᛅ'], // also ᚷ
+			['b', 'ᛒ'],
+			['c', 'ᚲ'], // also ᛋ
+			['d', 'ᚦ'],
+			['e', 'ᛆ'],
+			['f', 'ᚠ'], // also ᚨ
+			// 'g' not present
+			['h', 'ᚼ'],
+			['i', 'ᛁ'],
+			// 'j' not present
+			['k', 'ᚴ'], // also ᛲ which isn't in my coding font
+			['l', 'ᛚ'],
+			['m', 'ᛖ'], // also ᛘ
+			['n', 'ᚿ'], // also ᚳ
+			['o', 'ᛰ'], // also ⨁
+			['p', 'ᛠ'], // also ᚹ, ᛘ, ᛠ
+			['q', 'ᛩ'],
+			['r', 'ᚱ'],
+			['s', 'ᛋ'], // also ᛁ, ᛌ
+			['t', 'ᛐ'],
+			['u', 'ᚢ'],
+			// 'v' not present
+			// 'w' not present
+			['x', 'ᛋ'],
+			['y', 'ᛠ'],
+			['å', 'ᛡ'], // also Å
+			['ä', 'ᚯ'],
+			['ö', 'ᛦ'],
+		]);
+		
+		const numbersToRunesMap = new Map([
+			['0', '•'], // I made this up, they didn't use zero at all
+			['1', 'ᚠ'],
+			['2', 'ᚢ'],
+			['3', 'ᚦ'],
+			['4', 'ᚬ'],
+			['5', 'ᚱ'],
+			['6', 'ᚴ'],
+			['7', 'ᚼ'],
+			['8', 'ᚾ'],
+			['9', 'ᛁ'],
+		]);
+		
+		const modernSymbolsMap = (function(){
+			const symbols =
+				"±!@£$%^&*()_+§€#¢∞§¶•ªº≠=" +
+				"-" + // hyphen, minus
+				"–" + // n-dash
+				"—" + // m-dash
+				"[]{}|/\<>?≤≥`~";
+				
+			const result = new Map();
+			
+			for (const c of symbols) {
+				result.set(c, c);
+			}
+			
+			return result;
+		})();
+		
+		function concatenateMaps(map1, map2) {
+			const result = new Map();
+			
+			for (const map of [map1, map2]) {
+				for (const [key, value] of map) {
+					result.set(key, value);
+				}
+			}
+			
+			return result;
+		}
+		
+		function createMap(futhark, numbersToRunes, spaceToColon, keepModernSymbols) {
+			let conversionMap = {};
+			switch (futhark) {
+			case "Elder Futhark": conversionMap = elderFuthark; break;
+			case "Old English Futhorc": conversionMap = oldEnglishFuthorc; break;
+			case "Younger Futhark": conversionMap = youngerFuthark; break;
+			case "Medieval Runes": conversionMap = medievalRunes; break;
+			case "Dalecarlian Runes": conversionMap = dalecarlianRunes; break;
+			default: console.log("unrecognised futhark:" + futhark); return null;
+			}
+			
+			if (numbersToRunes) {
+				conversionMap = concatenateMaps(conversionMap, numbersToRunesMap);
+			}
+			
+			if (spaceToColon) {
+				conversionMap = concatenateMaps(conversionMap, new Map([[' ', ':']]));
+			}
+			
+			if (keepModernSymbols) {
+				conversionMap = concatenateMaps(conversionMap, modernSymbolsMap);
+			}
+			
+			return conversionMap;
+		}
+		
+		function transcribeEnglishToRunes(englishText, futhark, numbersToRunes, spaceToColon, keepModernSymbols, copyAllUnrecognisedSymbols) {
+			const englishToRunesMap = createMap(futhark, numbersToRunes, spaceToColon, keepModernSymbols);
+			if (englishToRunesMap == null) {
+				alert("Unrecognised runic alphabet, are you using auto-translate?");
+			}
 			
 			let workingCopy = englishText.toLowerCase();
 			let output = '';
 			
 			while (workingCopy.length > 0) {
 				let foundMatch = false;
-				for (let item in englishToRunesMap) {
-					if (workingCopy.startsWith(item)) {
-						output += englishToRunesMap[item];
-						workingCopy = workingCopy.slice(item.length);
+				for (let [key, value] of englishToRunesMap) {
+					if (workingCopy.startsWith(key)) {
+						output += value;
+						workingCopy = workingCopy.slice(key.length);
 						foundMatch = true;
 						break;
 					}
 				}
 				if (!foundMatch) {
-					output += workingCopy.charAt(0);
+					if (copyAllUnrecognisedSymbols) {
+						output += workingCopy.charAt(0);
+					}
 					workingCopy = workingCopy.slice(1);
 				}
 			}
@@ -108,7 +322,11 @@
 			return output;
 		}
 		
-		document.getElementById("englishText").addEventListener("input", transcribeToRunes);
+			document.getElementById("englishText").addEventListener("input", transcribeToRunes);
+			
+		for (const element of ["numbersToRunesCheckbox", "spaceToColonCheckbox", "keepModernSymbolsCheckbox", "copyAllUnrecognisedSymbols", "futharkSelection"]) {
+			document.getElementById(element).addEventListener("change", transcribeToRunes);
+		}
 	</script>
 </body>
 </html>
