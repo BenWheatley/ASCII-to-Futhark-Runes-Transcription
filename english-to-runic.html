@@ -7,12 +7,10 @@
 		body {
 			font-family: Arial, sans-serif;
 			text-align: center;
+			padding: 0px;
+			margin: 0px;
 		}
 		#container {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			margin-top: 20px;
 		}
 		textarea {
 			font-size: 20pt;
@@ -26,6 +24,9 @@
 		.v-padding {
 			padding-top: 10px;
 			padding-bottom: 10px;
+		}
+		.padding {
+			padding: 10px;
 		}
 	</style>
 </head>
@@ -63,6 +64,9 @@
 			</div>
 		</div>
 		<textarea id="runesText" placeholder="Runes transcription will appear here" rows="4" cols="50" readonly></textarea>
+		<div class="padding">
+			Note: Runes don't have a perfect 1-to-1 map with other writing systems, so some characters can't be correctly transcribed, and others have more than one way to be transcribed.
+		</div>
 	</div>
 	
 	<script>
@@ -190,7 +194,46 @@
 		]);
 		
 		const medievalRunes = new Map([
+			// Start with the runes that take two letters in English
+			['th', 'ᚦ'],
+			['ng', 'ᚶ'], // IPA ŋg
 			
+			// Modern letters not used in modern English
+			['ø', 'ᚯ'],
+			['æ', 'ᛅ'],
+			['ǫ', 'ᚰ'],
+			['ᴘ', 'ᛕ'], // ᴘ is not P
+			['þ', 'ᚦ'],
+			['ð', 'ᚧ'], // has modifier
+			['ɣ', 'ᚵ'], // has modifier; also ɣ isn't actually in English at all, it's a 'gh': https://en.wikipedia.org/wiki/Voiced_velar_fricative
+			['ø', 'ᚤ'], // has modifier
+			
+			// Modern English alphabet (English-order)
+			['a', 'ᛆ'],
+			['b', 'ᛒ'],
+			['c', 'ᚴ'], // no c, so substituting with 'k'
+			['d', 'ᛑ'], // has modifier
+			['e', 'ᛂ'], // has modifier; also (rarely?) j
+			['f', 'ᚠ'],
+			['g', 'ᚵ'], // has modifier
+			['h', 'ᚼ'],
+			['i', 'ᛁ'],
+			['j', 'ᛁ'],
+			['k', 'ᚴ'],
+			['l', 'ᛚ'],
+			['m', 'ᛘ'],
+			['n', 'ᚿ'],
+			['o', 'ᚮ'],
+			['p', 'ᛔ'], // has modifier
+			['q', 'ᚴᚢ'], // no q so this is kw
+			['r', 'ᚱ'],
+			['s', 'ᛋ'],
+			['t', 'ᛐ'], // also ᛏ
+			['u', 'ᚢ'],
+			['v', 'ᚡ'], // has modifier
+			['w', 'ᚢ'],
+			['y', 'ᛦ'], // also ᚤ
+			['z', 'ᛌ'],
 		]);
 		
 		const dalecarlianRunes = new Map([
@@ -215,7 +258,7 @@
 			['s', 'ᛋ'], // also ᛁ, ᛌ
 			['t', 'ᛐ'],
 			['u', 'ᚢ'],
-			// 'v' not present
+			['v', 'ᛒ'], // 'v' not present, so substituting with 'b'
 			// 'w' not present
 			['x', 'ᛋ'],
 			['y', 'ᛠ'],
