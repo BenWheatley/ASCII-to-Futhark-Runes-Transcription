@@ -11,11 +11,6 @@
             "src": "/iphone_app_icon_translate_english_to_runes_3037013078.png",
             "sizes": "1024x1024",
             "type": "image/png"
-        },
-        {
-            "src": "/icon-512x512.png",
-            "sizes": "512x512",
-            "type": "image/png"
         }
     ]
 }
