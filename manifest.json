@@ -2,7 +2,7 @@
     "name": "Runes Transcription",
     "short_name": "ᚱᚢᚾᛖᛋ",
     "description": "Latin script to Futhark runes — transcription",
-    "start_url": "/index.html",
+    "start_url": "/ASCII-to-Futhark-Runes-Transcription/index.html",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#000000",
