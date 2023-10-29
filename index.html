@@ -18,9 +18,12 @@
 		}
 		textarea {
 			font-size: 20pt;
+			max-width: 95%; /* Ensure it doesn't exceed the viewport width */
+			resize: none;
 		}
 		.label-checkbox {
 			padding: 10px;
+			white-space: nowrap;
 		}
 		.label-select {
 			padding: 10px;
@@ -35,23 +38,31 @@
 	</style>
 </head>
 <body>
-	<h1>English to Runes Transcription</h1>
+	<h1>Runic Transcription</h1>
 	<div id="container">
-		<textarea id="englishText" placeholder="Enter English text here" rows="4" cols="50"></textarea>
+		<textarea id="englishText" placeholder="Enter modern text here" rows="4" cols="50"></textarea>
 		<div>
-			<h2>Settings:</h2>
+			<h2>Settings</h2>
 			<div>
 				<label class="label-checkbox" for="numbersToRunesCheckbox">
 					<input type="checkbox" id="numbersToRunesCheckbox"> Convert numbers to runes
-				</label>
-				<label class="label-checkbox" for="spaceToColonCheckbox">
-					<input type="checkbox" id="spaceToColonCheckbox" checked> Replace space with colon
 				</label>
 				<label class="label-checkbox" for="keepModernSymbolsCheckbox">
 					<input type="checkbox" id="keepModernSymbolsCheckbox"> Keep basic modern symbols
 				</label>
 				<label class="label-checkbox" for="copyAllUnrecognisedSymbols">
 					<input type="checkbox" id="copyAllUnrecognisedSymbols"> Keep all unrecognised symbols
+				</label>
+			</div>
+			<div class="v-padding" />
+			<div>
+				<label class="label-select" for="spaceReplacement">Replace space with:
+					<select id="spaceReplacement">
+						<option value=" ">Keep as space</option>
+						<option value="᛫">᛫ (Runic single punctuation, 0x16EB)</option>
+						<option value="᛬" selected>᛬ (Runic multiple punctuation, 0x16EC)</option>
+						<option value="᛭">᛭ (Runic cross punctuation, 0x16ED)</option>
+					</select>
 				</label>
 			</div>
 			<div class="v-padding" />
@@ -67,7 +78,7 @@
 				</label>
 			</div>
 		</div>
-		<textarea id="runesText" placeholder="Runes transcription will appear here" rows="4" cols="50" readonly></textarea>
+		<textarea id="runesText" placeholder="Runic transcription will appear here" rows="4" cols="50" readonly></textarea>
 		<div class="padding">
 			Note: Runes don't have a perfect 1-to-1 map with other writing systems, so some characters can't be correctly transcribed, and others have more than one way to be transcribed.
 		</div>
@@ -78,10 +89,10 @@
 			const englishText = document.getElementById("englishText").value;
 			const futhark = document.getElementById('futharkSelection').value;
 			const numbersToRunes = document.getElementById('numbersToRunesCheckbox').checked;
-			const spaceToColon = document.getElementById('spaceToColonCheckbox').checked;
+			const spaceReplacement = document.getElementById('spaceReplacement').value;
 			const keepModernSymbols = document.getElementById('keepModernSymbolsCheckbox').checked;
 			const copyAllUnrecognisedSymbols = document.getElementById('copyAllUnrecognisedSymbols').checked;
-			const runesText = transcribeEnglishToRunes(englishText, futhark, numbersToRunes, spaceToColon, keepModernSymbols, copyAllUnrecognisedSymbols);
+			const runesText = transcribeEnglishToRunes(englishText, futhark, numbersToRunes, spaceReplacement, keepModernSymbols, copyAllUnrecognisedSymbols);
 			document.getElementById("runesText").value = runesText;
 		}
 		
@@ -120,7 +131,7 @@
 			['v', 'ᚹ'],
 			['w', 'ᚹ'],
 			['x', 'ᚲᛋ'],
-			['w', 'ᚹᛁ'],
+			['y', 'ᚹᛁ'], // 'y' not present, this is just an approximation
 			['z', 'ᛉ'],
 		]);
 		
@@ -313,7 +324,7 @@
 			return result;
 		}
 		
-		function createMap(futhark, numbersToRunes, spaceToColon, keepModernSymbols) {
+		function createMap(futhark, numbersToRunes, spaceReplacement, keepModernSymbols) {
 			let conversionMap = {};
 			switch (futhark) {
 			case "Elder Futhark": conversionMap = elderFuthark; break;
@@ -328,9 +339,7 @@
 				conversionMap = concatenateMaps(conversionMap, numbersToRunesMap);
 			}
 			
-			if (spaceToColon) {
-				conversionMap = concatenateMaps(conversionMap, new Map([[' ', ':']]));
-			}
+			conversionMap = concatenateMaps(conversionMap, new Map([[' ', spaceReplacement]]));
 			
 			if (keepModernSymbols) {
 				conversionMap = concatenateMaps(conversionMap, modernSymbolsMap);
@@ -339,8 +348,8 @@
 			return conversionMap;
 		}
 		
-		function transcribeEnglishToRunes(englishText, futhark, numbersToRunes, spaceToColon, keepModernSymbols, copyAllUnrecognisedSymbols) {
-			const englishToRunesMap = createMap(futhark, numbersToRunes, spaceToColon, keepModernSymbols);
+		function transcribeEnglishToRunes(englishText, futhark, numbersToRunes, spaceReplacement, keepModernSymbols, copyAllUnrecognisedSymbols) {
+			const englishToRunesMap = createMap(futhark, numbersToRunes, spaceReplacement, keepModernSymbols);
 			if (englishToRunesMap == null) {
 				alert("Unrecognised runic alphabet, are you using auto-translate?");
 			}
@@ -371,7 +380,7 @@
 		
 			document.getElementById("englishText").addEventListener("input", transcribeToRunes);
 			
-		for (const element of ["numbersToRunesCheckbox", "spaceToColonCheckbox", "keepModernSymbolsCheckbox", "copyAllUnrecognisedSymbols", "futharkSelection"]) {
+		for (const element of ["numbersToRunesCheckbox", "spaceReplacement", "keepModernSymbolsCheckbox", "copyAllUnrecognisedSymbols", "futharkSelection"]) {
 			document.getElementById(element).addEventListener("change", transcribeToRunes);
 		}
 	</script>
