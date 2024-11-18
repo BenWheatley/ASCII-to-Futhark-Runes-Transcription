@@ -85,6 +85,69 @@
 	</div>
 	
 	<script>
+		function syncUIWithParams() {
+			const params = new URLSearchParams(window.location.search);
+			
+			// Populate the English text field
+			const englishTextParam = params.get("e");
+			if (englishTextParam !== null) {
+				document.getElementById("englishText").value = decodeURIComponent(englishTextParam);
+			}
+			
+			// Populate the checkboxes
+			for (const checkbox of ["numbersToRunesCheckbox", "keepModernSymbolsCheckbox", "copyAllUnrecognisedSymbols"]) {
+				const paramValue = params.get(checkbox);
+				if (paramValue !== null) {
+					document.getElementById(checkbox).checked = paramValue === "true";
+				}
+			}
+			
+			// Populate the dropdowns
+			for (const select of ["spaceReplacement", "futharkSelection"]) {
+				const paramValue = params.get(select);
+				if (paramValue !== null) {
+					const element = document.getElementById(select);
+					if (Array.from(element.options).map(opt => opt.value).includes(paramValue)) {
+						element.value = paramValue;
+					}
+				}
+			}
+			transcribeToRunes(); // Re-run transcription
+		}
+		
+		function updateParamsFromUI() {
+			const params = new URLSearchParams(window.location.search);
+			
+			// Update the English text field
+			params.set("e", encodeURIComponent(document.getElementById("englishText").value));
+			
+			// Update the checkboxes
+			for (const checkbox of ["numbersToRunesCheckbox", "keepModernSymbolsCheckbox", "copyAllUnrecognisedSymbols"]) {
+				params.set(checkbox, document.getElementById(checkbox).checked.toString());
+			}
+			
+			// Update the dropdowns
+			for (const select of ["spaceReplacement", "futharkSelection"]) {
+				params.set(select, document.getElementById(select).value);
+			}
+			
+			// Reflect the new URL
+			const newUrl = `${window.location.pathname}?${params.toString()}`;
+			history.replaceState(null, "", newUrl);
+		}
+		
+		document.addEventListener("DOMContentLoaded", () => {
+			syncUIWithParams();
+			
+			document.getElementById("englishText").addEventListener("input", updateParamsFromUI);
+			for (const checkbox of ["numbersToRunesCheckbox", "keepModernSymbolsCheckbox", "copyAllUnrecognisedSymbols"]) {
+				document.getElementById(checkbox).addEventListener("change", updateParamsFromUI);
+			}
+			for (const select of ["spaceReplacement", "futharkSelection"]) {
+				document.getElementById(select).addEventListener("change", updateParamsFromUI);
+			}
+		});
+		
 		function transcribeToRunes() {
 			const englishText = document.getElementById("englishText").value;
 			const futhark = document.getElementById('futharkSelection').value;
